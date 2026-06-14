@@ -73,21 +73,7 @@ Rede neural do tipo Perceptron Multicamadas com duas camadas ocultas (64 e 32 ne
 | Revocação | 57,41% | 55,56% |
 | F1-Score | 58,49% | 60,00% |
 
-### Gráfico de Comparação
-
-![Comparação de Métricas](graficos/comparacao_metricas.png)
-
-### Matrizes de Confusão
-
-![Matrizes de Confusão](graficos/matrizes_confusao.png)
-
-### Curva de Perda da RNA
-
-![Curva de Perda](graficos/curva_perda_rna.png)
-
-### Distribuição da Variável Alvo
-
-![Distribuição](graficos/distribuicao_alvo.png)
+### Imagens dos gráficos de comparação na pasta 'Docs'
 
 ---
 
@@ -130,19 +116,3 @@ Os modelos são salvos automaticamente em `modelos/`:
 
 ---
 
-## Estrutura do repositório
-```
-├── main.py                  # Script principal de treinamento e avaliação
-├── diabetes.csv             # Dataset utilizado
-├── README.md                # Este arquivo
-├── relatorio.pdf            # PDF com o conteúdo do README
-├── graficos/
-│   ├── comparacao_metricas.png
-│   ├── matrizes_confusao.png
-│   ├── curva_perda_rna.png
-│   └── distribuicao_alvo.png
-└── modelos/
-    ├── svm_modelo.pkl
-    ├── rna_modelo.pkl
-    └── scaler.pkl
-```
