@@ -3,10 +3,10 @@ Disciplina de Inteligência Artificial, Professor Munif, Unicesumar 2026
 # Previsão de Diabetes com SVM e Redes Neurais
 
 ## Integrantes
-- Nome do Aluno 1 - RA: XXXXXXXX
-- Nome do Aluno 2 - RA: XXXXXXXX
-- Nome do Aluno 3 - RA: XXXXXXXX
-- Nome do Aluno 4 - RA: XXXXXXXX
+- Caio Carneiro Germani - RA: 23155074-2
+- Pedro Henrique dos Santos Manfrim - RA: 23079481-2
+- Daniel Rodrigues Nardi - RA: 23159251-2
+- Eduardo Escudeiro Seifert - RA: 23034738-2
 
 ---
 
