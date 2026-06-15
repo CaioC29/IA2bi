@@ -11,13 +11,13 @@ matplotlib.use('Agg')
 import seaborn as sns
 import warnings
 import os
-import pickle
+import pickle  # Salva/carrega objetos Python em arquivo binário
 
 warnings.filterwarnings('ignore')
 
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler  # Normaliza features (média 0, desvio padrão 1)
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import (
@@ -46,9 +46,9 @@ try:
     df = pd.read_csv(url, names=colunas)
     print(f"Dataset carregado da internet: {df.shape[0]} registros, {df.shape[1]} colunas")
 except Exception:
-    # fallback: gera dataset sintético realista
+    # Fallback: gera dataset sintético com distribuições similares ao dataset real
     print("Usando dataset sintético (sem internet)...")
-    np.random.seed(42)
+    np.random.seed(42)  # Fixa semente para resultados reproduzíveis
     n = 768
     df = pd.DataFrame({
         "Gravidez": np.random.randint(0, 18, n),
@@ -60,7 +60,7 @@ except Exception:
         "FuncaoDiabetesPedigree": np.round(np.random.exponential(0.47, n).clip(0.08, 2.42), 3),
         "Idade": np.random.randint(21, 81, n),
     })
-    # variável alvo correlacionada com glicose e IMC
+    # Gera o target via função sigmoid sobre combinação linear das features (simula regressão logística)
     prob = 1 / (1 + np.exp(-(
         -6
         + 0.04 * df["GlicosePlasmatica"]
@@ -78,22 +78,23 @@ print(f"Registros com diabetes  (1): {(df['Diabetes']==1).sum()}")
 # ──────────────────────────────────────────
 print("\nPRÉ-PROCESSAMENTO...")
 
-# Substitui zeros inválidos pela mediana
+# Zeros nessas colunas são biologicamente impossíveis — substitui pela mediana
 cols_sem_zero = ["GlicosePlasmatica","PressaoArterial","EspessuraPeleTricepal","Insulina","IMC"]
 for c in cols_sem_zero:
     mediana = df[c].replace(0, np.nan).median()
     df[c] = df[c].replace(0, mediana)
 
-X = df.drop("Diabetes", axis=1)
-y = df["Diabetes"]
+X = df.drop("Diabetes", axis=1)  # Features
+y = df["Diabetes"]               # Target
 
+# stratify=y garante proporção igual de classes no treino e no teste
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
 
 scaler = StandardScaler()
-X_train_sc = scaler.fit_transform(X_train)
-X_test_sc  = scaler.transform(X_test)
+X_train_sc = scaler.fit_transform(X_train)  # Aprende a escala com o treino e transforma
+X_test_sc  = scaler.transform(X_test)       # Aplica a mesma escala no teste (sem re-aprender)
 
 print(f"Treino: {X_train.shape[0]} amostras | Teste: {X_test.shape[0]} amostras")
 
@@ -103,6 +104,7 @@ print(f"Treino: {X_train.shape[0]} amostras | Teste: {X_test.shape[0]} amostras"
 
 # --- PARTE 1: SVM ---
 print("\nTREINANDO SVM (Parte 1)...")
+# kernel RBF separa classes não-linearmente; C controla tolerância a erros; gamma='scale' é automático
 svm = SVC(kernel='rbf', C=10, gamma='scale', probability=True, random_state=42)
 svm.fit(X_train_sc, y_train)
 y_pred_svm = svm.predict(X_test_sc)
@@ -117,6 +119,7 @@ print("TREINANDO RNA - Rede Neural (Parte 2)...")
 historico_perda_treino = []
 historico_perda_val    = []
 
+# max_iter=1 + warm_start=True permite treinar época por época e registrar a perda manualmente
 rna = MLPClassifier(
     hidden_layer_sizes=(64, 32),
     activation='relu',
@@ -130,7 +133,6 @@ rna = MLPClassifier(
 for epoch in range(150):
     rna.fit(X_train_sc, y_train)
     historico_perda_treino.append(rna.loss_)
-    # validação aproximada
     from sklearn.metrics import log_loss
     prob_val = rna.predict_proba(X_test_sc)
     historico_perda_val.append(log_loss(y_test, prob_val))
@@ -149,7 +151,7 @@ def metricas(nome, y_real, y_pred):
         "Acurácia":   round(accuracy_score(y_real, y_pred) * 100, 2),
         "Precisão":   round(precision_score(y_real, y_pred) * 100, 2),
         "Revocação":  round(recall_score(y_real, y_pred) * 100, 2),
-        "F1-Score":   round(f1_score(y_real, y_pred) * 100, 2),
+        "F1-Score":   round(f1_score(y_real, y_pred) * 100, 2),  # Média harmônica entre Precisão e Revocação
     }
 
 m_svm = metricas("SVM (Parte 1)",    y_test, y_pred_svm)
@@ -197,7 +199,7 @@ for ax, y_pred, titulo, cor in [
     (axes[0], y_pred_svm, "SVM (Parte 1)", COR1),
     (axes[1], y_pred_rna, "RNA (Parte 2)", COR2),
 ]:
-    cm = confusion_matrix(y_test, y_pred)
+    cm = confusion_matrix(y_test, y_pred)  # Matriz com VP, FP, FN, VN
     sns.heatmap(cm, annot=True, fmt='d', ax=ax,
                 cmap=sns.light_palette(cor, as_cmap=True),
                 xticklabels=["Sem Diabetes","Com Diabetes"],
@@ -235,7 +237,6 @@ plt.close()
 print("Gráficos salvos em /graficos/")
 print("\nTreinamento concluído com sucesso!")
 
-# Salva métricas para uso no PDF/README
 import json
 with open("metricas.json", "w") as f:
     json.dump({"svm": m_svm, "rna": m_rna}, f, ensure_ascii=False, indent=2)
