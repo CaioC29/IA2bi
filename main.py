@@ -47,27 +47,8 @@ try:
     print(f"Dataset carregado da internet: {df.shape[0]} registros, {df.shape[1]} colunas")
 except Exception:
     # Fallback: gera dataset sintético com distribuições similares ao dataset real
-    print("Usando dataset sintético (sem internet)...")
-    np.random.seed(42)  # Fixa semente para resultados reproduzíveis
-    n = 768
-    df = pd.DataFrame({
-        "Gravidez": np.random.randint(0, 18, n),
-        "GlicosePlasmatica": np.random.normal(120, 32, n).clip(0, 199).astype(int),
-        "PressaoArterial": np.random.normal(69, 19, n).clip(0, 122).astype(int),
-        "EspessuraPeleTricepal": np.random.normal(20, 16, n).clip(0, 99).astype(int),
-        "Insulina": np.random.normal(79, 115, n).clip(0, 846).astype(int),
-        "IMC": np.round(np.random.normal(32, 8, n).clip(0, 67), 1),
-        "FuncaoDiabetesPedigree": np.round(np.random.exponential(0.47, n).clip(0.08, 2.42), 3),
-        "Idade": np.random.randint(21, 81, n),
-    })
-    # Gera o target via função sigmoid sobre combinação linear das features (simula regressão logística)
-    prob = 1 / (1 + np.exp(-(
-        -6
-        + 0.04 * df["GlicosePlasmatica"]
-        + 0.07 * df["IMC"]
-        + 0.01 * df["Idade"]
-    )))
-    df["Diabetes"] = (np.random.rand(n) < prob).astype(int)
+    print("Erro ao buscar dados no dataset")
+   
 
 df.to_csv("diabetes.csv", index=False)
 print(f"Registros sem diabetes (0): {(df['Diabetes']==0).sum()}")
